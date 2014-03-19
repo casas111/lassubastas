@@ -13,7 +13,7 @@
 
 Route::get('/', 'HomeController@get_index');
 Route::get('inicio', 'HomeController@get_index');
-Route::get('articulo/{nombre_articulo}/{id_articulo}', 'HomeController@get_articulo');
+Route::get('subasta/{auction_id}', 'HomeController@get_subasta');
 
 Route::get('comprar-puntos', function()
 {
@@ -25,6 +25,7 @@ Route::post('registrar','HomeController@post_register');
 Route::post('signin','HomeController@post_signin');
 Route::get('time/{auction_id}', 'HomeController@get_time');
 Route::get('add_time/{auction_id}', 'HomeController@get_add_time');
+Route::get('finish_auction/{auction_id}', 'HomeController@get_finish_auction');
 
 Route::get('logout', function()
 {

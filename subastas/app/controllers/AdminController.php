@@ -65,7 +65,9 @@ class AdminController extends BaseController {
             $auction->status="Active";
             $auction->id_item=Input::get('item_id');
             $auction->end_date=date("Y-m-d H:i:s",strtotime($full_date));
-            $auction->added_time=0;
+            $auction->added_time=
+            0;
+            $auction->price=0;
             $auction->save();
 
             return Redirect::to('admin/new_auction')->withErrors('A@Subasta ha iniciado exitosamente!');

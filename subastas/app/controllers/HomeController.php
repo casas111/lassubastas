@@ -83,37 +83,103 @@ class HomeController extends BaseController {
         $auction= Auction::find($auction_id);
         $now=strtotime(date('Y-m-d H:i:s'));
         $result=strtotime($auction->end_date)+intval($auction->added_time)-$now;
-        echo $auction_id."@".date('H:i:s',$result);
+        $usr_name=$auction->id_user>0?$auction->user->name:'';
+        echo $auction_id."@".date('H:i:s',$result)."@".$auction->price."@".$usr_name;
 
     }
 
     public function get_add_time($auction_id)
     {
-        $auction= Auction::find($auction_id);
-        $auction->added_time+=10;
-        $auction->save();
-        $now=strtotime(date('Y-m-d H:i:s'));
-        $result=strtotime($auction->end_date)+intval($auction->added_time)+11-$now;
-        echo $auction_id."@".date('H:i:s',$result);  
+        if(Auth::check())
+        {
+            if(Auth::user()->points>0)
+            {
+                Auth::user()->points--;
+                Auth::user()->save();
+                $auction= Auction::find($auction_id);
+                $auction->added_time+=10;
+                $auction->price+=1;
+                $auction->id_user=Auth::user()->id;
+                $auction->save();
+                $now=strtotime(date('Y-m-d H:i:s'));
+                $result=strtotime($auction->end_date)+intval($auction->added_time)+11-$now;
+                $bid=new Bid;
+                $bid->value=$auction->price;
+                $bid->id_user=Auth::user()->id;
+                $bid->id_auction=$auction->id;
+                $bid->save();
+                echo $auction_id."@".date('H:i:s',$result)."@".$auction->price."@".Auth::user()->name."@".Auth::user()->points;  
 
 
-        $connection = new AMQPConnection('localhost', 5672, 'guest', 'guest');
-        $channel = $connection->channel();
+                $connection = new AMQPConnection('localhost', 5672, 'guest', 'guest');
+                $channel = $connection->channel();
 
-        $channel->exchange_declare('myqueue', 'topic', false, false, false);
+                $channel->exchange_declare('myqueue', 'topic', false, false, false);
 
-        $routing_key = "time";
+                $routing_key = "time";
 
-        $data = $auction_id."@".date('H:i:s',$result);
+                $data = $auction_id."@".date('H:i:s',$result)."@".$auction->price."@".Auth::user()->name;
 
-        $msg = new AMQPMessage($data);
+                $msg = new AMQPMessage($data);
 
-        $channel->basic_publish($msg, 'myqueue', $routing_key);
+                $channel->basic_publish($msg, 'myqueue', $routing_key);
 
-        $channel->close();
-        $connection->close();
+                $channel->close();
+                $connection->close();
+            }
+            else
+            {
+                echo 'error@No tiene sificientes puntos';
+            }
+            
+        }
+        else
+        {
+            echo 'error@Por favor haga sign in';
+        }
 
               
+    }
+
+    public function get_subasta($auction_id)
+    {
+        $auction= Auction::find($auction_id);
+        return View::make('articulo');
+    }
+
+    public function get_finish_auction($auction_id)
+    {
+        $auction= Auction::find($auction_id);
+        if($auction->status != "Finished")
+        {
+            $auction->status="Finished";
+            $auction->save();
+
+            $connection = new AMQPConnection('localhost', 5672, 'guest', 'guest');
+            $channel = $connection->channel();
+
+            $channel->exchange_declare('myqueue', 'topic', false, false, false);
+
+            $routing_key = "time";
+            if($auction->id_user == Auth::user()->id)
+            {
+                $data="done@".$auction_id."@".$auction->item->name."@"."winnerqwe";
+            }
+            else
+            {
+                $data = "done@".$auction->item->name."@".$auction->user->name;
+            }
+            
+
+            $msg = new AMQPMessage($data);
+
+            $channel->basic_publish($msg, 'myqueue', $routing_key);
+
+            $channel->close();
+            $connection->close();
+        }
+        
+
     }
 
 }

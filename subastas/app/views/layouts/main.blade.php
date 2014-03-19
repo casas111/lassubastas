@@ -40,6 +40,11 @@
     <script src="https://code.jquery.com/jquery.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.0/js/bootstrap.min.js"></script>
+
+    <script>
+        
+    </script>
+
 </head>
 <body class="bb" >
 
@@ -52,7 +57,8 @@
     if (Auth::check())
     {
     ?>
-    <div style="position:relative; height: 80px "><div class="puntos-con"><h4><span class="welcome"><?php echo Auth::user()->name; ?></span> | Puntos: <img src="{{asset('img/auction_hammer.png')}}" class="hammer"> <?php echo Auth::user()->points; ?></h4></div></div>
+    <div style="position:relative; height: 80px "><div class="puntos-con"><h4><span class="welcome"><?php echo Auth::user()->name; ?></span> | Puntos: <img src="{{asset('img/auction_hammer.png')}}" class="hammer">
+        <span id="user_poinsss"> <?php echo Auth::user()->points; ?></span></h4></div></div>
     <?php
     }else{echo '<br>';}
     ?>

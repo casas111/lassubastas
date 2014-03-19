@@ -1,7 +1,7 @@
 @extends('layouts.main')
 @section('content')
     <!-- From: http://cdn.sockjs.org/ -->
-    <script src="http://cdn.sockjs.org/sockjs-0.3.min.js"></script>
+    <script src="{{asset('js/sockjs-0.3.min.js')}}"></script>
  
     <!-- From RabbitMQ-Web-Stomp examples -->
     <script src="{{asset('js/stomp.js')}}"></script>
@@ -48,6 +48,7 @@
 
     </style>
     <script>
+        
         $(document).ready(function (){
 
             get_time();
@@ -60,15 +61,28 @@
                     type: "get",
                     url: aa
                 }).complete(function(msg){
-                        var r=msg.responseText.split("@");
+                    var r=msg.responseText.split("@");
+                    if(r[0] == 'error'){alert(r[1]);}
+                    else
+                    {
+                        
                         console.log(msg);
                         $("#"+r[0]).text(r[1]);
                         sec[r[0]]=time_to_seconds(r[1]);
+                        $("#price"+r[0]).text(r[2]);
+                        $("#winner"+r[0]).text(r[3]);
+                        $("#user_pointsss").text(r[4]);
+                        console.log($("#user_pointsd").text());
+                        //TODO aca no se que pasa!
+
+                    }
+
                 });
             });
         });
 
         var sec={};
+        var intervals={};
 
         function get_time()
         {
@@ -85,8 +99,11 @@
                         var r=msg.responseText.split("@");
                         console.log("B: "+r[1]);
                         $("#"+r[0]).text(r[1]);
+                        $("#price"+r[0]).text(r[2]);
+                        $("#winner"+r[0]).text(r[3]);
                         sec[r[0]]=time_to_seconds(r[1]);
-                        setInterval(function(){
+
+                        intervals[r[0]]=setInterval(function(){
                             run_timers(r[0]);
                         }, 1000);
                 });
@@ -94,8 +111,23 @@
         }
         function run_timers(idd)
         {
-            $("#"+idd).text(seconds_to_time(sec[idd]));
-            sec[idd]--;
+            if(sec[idd]>0)
+            {
+                $("#"+idd).text(seconds_to_time(sec[idd]));
+                sec[idd]--;
+            }
+            else
+            {
+                clearInterval(intervals[idd]);
+                var aa="finish_auction/"+idd;
+                $.ajax({
+                    type: "get",
+                    url: aa
+                }).complete(function(msg){                   
+
+                });
+            }
+
         }
 
         
@@ -139,21 +171,19 @@
         {
             ?>
             <div class="col-lg-4 minisubasta">
-                <h2><a href="#" class="titles"><?php  echo $auctions[$i]->item->name; ?></a><span class="label label-danger pull-right timee" id="<?php  echo $auctions[$i]->id; ?>"></span></h2>
+                <h2><a href="subasta/<?php  echo $auctions[$i]->id; ?>" class="titles"><?php  echo $auctions[$i]->item->name; ?></a><span class="label label-danger pull-right timee" id="<?php  echo $auctions[$i]->id; ?>"></span></h2>
                 <div class="img-cont"><img src="<?php  echo $auctions[$i]->item->image; ?>" class="img" /></div>
-                <h4 class="price">
-                    $
-                    <?php
-                        $bids=$auctions[$i]->bids;
-                        if(count($bids)>0)
-                        {
-                            echo $bids[count($bids)-1]->value;
-                        }
-                        else{
-                            echo 0;
-                        }
-                    ?>
-                    COP
+                <h4 class="price" >
+                    <span id="price<?php  echo $auctions[$i]->id; ?>"><?php echo $auctions[$i]->price; ?></span>
+                    Points<br>
+                    <span class="label label-success"><span class="glyphicon glyphicon-star"></span> 
+                        <span id="winner<?php  echo $auctions[$i]->id; ?>">
+                            <?php
+                            $usr_name=$auctions[$i]->id_user>0?$auctions[$i]->user->name:'';
+                            echo $usr_name;
+                            ?>
+                    </span>
+                </span>
                 </h4><hr>
                 <p><a class="btn btn-success btn-lg bid ofertar" href="#" role="button" id="o<?php  echo $auctions[$i]->id; ?>">>Ofertar Ahora &raquo;</a></p>
             </div>
@@ -167,19 +197,17 @@
             <div class="col-lg-4 minisubasta">
                 <h2><a href="#" class="titles"><?php  echo $auctions[$i]->item->name; ?></a><span class="label label-danger pull-right timee" id="<?php  echo $auctions[$i]->id; ?>"></span></h2>
                 <div class="img-cont"><img src="<?php  echo $auctions[$i]->item->image; ?>" class="img" /></div>
-                <h4 class="price">
-                    $
-                    <?php
-                    $bids=$auctions[$i]->bids;
-                    if(count($bids)>0)
-                    {
-                        echo $bids[count($bids)-1]->value;
-                    }
-                    else{
-                        echo 0;
-                    }
-                    ?>
-                    COP
+                <h4 class="price" >
+                    <span id="price<?php  echo $auctions[$i]->id; ?>"><?php echo $auctions[$i]->price; ?></span>
+                    Points<br>
+                    <span class="label label-success"><span class="glyphicon glyphicon-star"></span> 
+                        <span id="winner<?php  echo $auctions[$i]->id; ?>">
+                            <?php
+                            $usr_name=$auctions[$i]->id_user>0?$auctions[$i]->user->name:'';
+                            echo $usr_name;
+                            ?>
+                    </span>
+                </span>
                 </h4><hr>
                 <p><a class="btn btn-success btn-lg bid ofertar" href="#" role="button" id="o<?php  echo $auctions[$i]->id; ?>">>Ofertar Ahora &raquo;</a></p>
             </div>
@@ -190,19 +218,17 @@
             <div class="col-lg-4 minisubasta">
                 <h2><a href="#" class="titles"><?php  echo $auctions[$i]->item->name; ?></a><span class="label label-danger pull-right timee" id="<?php  echo $auctions[$i]->id; ?>"></span></h2>
                 <div class="img-cont"><img src="<?php  echo $auctions[$i]->item->image; ?>" class="img" /></div>
-                <h4 class="price">
-                    $
-                    <?php
-                    $bids=$auctions[$i]->bids;
-                    if(count($bids)>0)
-                    {
-                        echo $bids[count($bids)-1]->value;
-                    }
-                    else{
-                        echo 0;
-                    }
-                    ?>
-                    COP
+                <h4 class="price" >
+                    <span id="price<?php  echo $auctions[$i]->id; ?>"><?php echo $auctions[$i]->price; ?></span>
+                    Points<br>
+                    <span class="label label-success"><span class="glyphicon glyphicon-star"></span> 
+                        <span id="winner<?php  echo $auctions[$i]->id; ?>">
+                            <?php
+                            $usr_name=$auctions[$i]->id_user>0?$auctions[$i]->user->name:'';
+                            echo $usr_name;
+                            ?>
+                    </span>
+                </span>
                 </h4><hr>
                 <p><a class="btn btn-success btn-lg bid ofertar" href="#" role="button" id="o<?php  echo $auctions[$i]->id; ?>">>Ofertar Ahora &raquo;</a></p>
             </div>
