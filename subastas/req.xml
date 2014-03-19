@@ -1,0 +1,34 @@
+<requerimientos>
+
+    <requerimiento nombre="agregar_cliente">
+        <descripcion>agregar cliente a la base de datos</descripcion>
+        <quien>Administrador</quien>
+        <para>Para manejar los negocios</para>
+    </requerimiento>
+    <requerimiento nombre="agregar_abogado">
+        <descripcion>agregar abogado a la base de datos</descripcion>
+        <quien>Administrador</quien>
+        <para>Para manejar actividades</para>
+    </requerimiento>
+    <requerimiento nombre="agregar_negocio">
+        <descripcion>agregar un negocio a la base de datos</descripcion>
+        <quien>Administrador</quien>
+        <para>Para tener un wraper que contiene las actividades por negocio</para>
+    </requerimiento>
+    <requerimiento nombre="agregar_actividad">
+        <descripcion>agregar una actividad a un negocio en la base de datos</descripcion>
+        <quien>Abogado</quien>
+        <para>Para tener un registro de las actividades realizadas en un negocio y poder facturar</para>
+        <restricciones>El abogado solo puede registrar sus actividades</restricciones>
+        <restricciones>Dos actividades no pueden compartir ningun tiempo para este abogado</restricciones>
+        <restricciones>La fecha de la actividad puede ser hasta 3 dias atras</restricciones>
+        <restricciones>Puede durar maximo 3 dias</restricciones>
+    </requerimiento>
+
+    <requerimiento nombre="Consultar_actividades_realizadas_totales">
+        <descripcion>Consultar todas las actividades realizadas en un negocio</descripcion>
+        <quien>Administrador</quien>
+        <para>Uso personal</para>
+    </requerimiento>
+
+</requerimientos>
